@@ -68,33 +68,30 @@ def test_divide(operand1, operand2):
 # Execute tests
 if __name__ == "__main__":
     # Test specific endpoints
-    #test_add(10, 5)
-    #test_subtract(10, 5)
-    #test_multiply(10, 5)
-    #test_divide(10, 5)
+    test_add(10, 5)
+    test_subtract(10, 5)
+    test_multiply(10, 5)
+    test_divide(10, 5)
     
     # Test catch-all operation endpoint
-    #test_operate("add", 10, 5)
-    #test_operate("subtract", 10, 5)
-    #test_operate("multiply", 10, 5)
-    #test_operate("divide", 10, 5)
-    #test_operate("divide", 10, 0)  # Test division by zero
+    test_operate("add", 10, 5)
+    test_operate("subtract", 10, 5)
+    test_operate("multiply", 10, 5)
+    test_operate("divide", 10, 5)
+    test_operate("divide", 10, 0)  # Test division by zero
 
     # Very large number (Overflow check)
-    #overflow error
     test_add(1e308, 1e308)  # Add two very large numbers
-    #test_multiply(1e154, 1e154)  # Multiply two large numbers to exceed float range
+    test_multiply(1e154, 1e154)  # Multiply two large numbers to exceed float range
 
     # Very small number (Underflow check)
-    #underflow
     test_subtract(1e-308, 1e-308)  # Subtract two very small numbers
-    # underflow
     test_divide(1e-308, 1e308)  # Divide a very small number by a large number
     # Invalid input (strings instead of numbers)
     test_add("string1", "string2")  # Expect validation error
     test_multiply("abc", 123)       # Expect validation error
 
-    #test_add(-10, -5)  # Expect result to be -15
-    #test_subtract(-10, 5)  # Expect result to be -15
-    #test_multiply(-10, -5)  # Expect result to be 50
-    #test_divide(-10, -5)  # Expect result to be 2.0
+    test_add(-10, -5)  # Expect result to be -15
+    test_subtract(-10, 5)  # Expect result to be -15
+    test_multiply(-10, -5)  # Expect result to be 50
+    test_divide(-10, -5)  # Expect result to be 2.0
