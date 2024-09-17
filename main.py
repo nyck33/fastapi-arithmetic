@@ -50,7 +50,8 @@ app.add_middleware(
 # OAuth2PasswordBearer instance
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-@app.post("/operate")
+'''
+@app.get("/operate")
 def operate(operation_data: OperationModel):
     operation = operation_data.operation
     operand1 = operation_data.operand1
@@ -94,9 +95,9 @@ def operate(operation_data: OperationModel):
         # Log any other exceptions that occur
         log_operation_to_db(operation, operand1, operand2, None, "Error", error_message=str(e))
         raise HTTPException(status_code=400, detail=str(e))
+'''
 
-
-@app.post("/add")
+@app.get("/add")
 def add(operands: OperandsModel):
     try:
         # Input validation checks
@@ -133,7 +134,7 @@ def add(operands: OperandsModel):
         raise HTTPException(status_code=400, detail=str(e))
 
     
-@app.post("/subtract")
+@app.get("/subtract")
 def subtract(operands: OperandsModel):
     try:
         # Input validation checks
@@ -170,7 +171,7 @@ def subtract(operands: OperandsModel):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.post("/multiply")
+@app.get("/multiply")
 def multiply(operands: OperandsModel):
     try:
         # Input validation checks
@@ -206,7 +207,7 @@ def multiply(operands: OperandsModel):
         log_operation_to_db("multiply", operands.operand1, operands.operand2, None, "Error", error_message=str(e))
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/divide")
+@app.get("/divide")
 def divide(operands: OperandsModel):
     try:
         # Input validation checks
