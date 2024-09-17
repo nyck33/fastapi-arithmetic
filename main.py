@@ -97,7 +97,7 @@ def operate(operation_data: OperationModel):
         raise HTTPException(status_code=400, detail=str(e))
 '''
 
-@app.get("/add")
+@app.post("/add")
 def add(operands: OperandsModel):
     try:
         # Input validation checks
@@ -134,7 +134,7 @@ def add(operands: OperandsModel):
         raise HTTPException(status_code=400, detail=str(e))
 
     
-@app.get("/subtract")
+@app.post("/subtract")
 def subtract(operands: OperandsModel):
     try:
         # Input validation checks
@@ -171,7 +171,7 @@ def subtract(operands: OperandsModel):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.get("/multiply")
+@app.post("/multiply")
 def multiply(operands: OperandsModel):
     try:
         # Input validation checks
@@ -207,7 +207,7 @@ def multiply(operands: OperandsModel):
         log_operation_to_db("multiply", operands.operand1, operands.operand2, None, "Error", error_message=str(e))
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/divide")
+@app.post("/divide")
 def divide(operands: OperandsModel):
     try:
         # Input validation checks
