@@ -18,11 +18,11 @@ from fastapi.exception_handlers import http_exception_handler
 from fastapi.encoders import jsonable_encoder
 
 # Load environment variables
-load_dotenv()
+#load_dotenv()
 
-SECRET_KEY = os.getenv('SECRET_KEY')
-ALGORITHM = os.getenv('ALGORITHM')
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
+#SECRET_KEY = os.getenv('SECRET_KEY')
+#ALGORITHM = os.getenv('ALGORITHM')
+#ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')  # Using the service role key for server-side operations
 
