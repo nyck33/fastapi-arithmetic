@@ -1,6 +1,14 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Security
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, APIKeyHeader
+from fastapi.security.api_key import APIKeyHeader
+from fastapi import Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from fastapi.exception_handlers import http_exception_handler
+from fastapi.encoders import jsonable_encoder
+from fastapi.openapi.utils import get_openapi
+from fastapi.openapi.models import APIKey
 from pydantic import BaseModel
 from datetime import timedelta
 import math
@@ -11,14 +19,26 @@ import os
 from dotenv import load_dotenv
 from utils import authenticate_user, create_access_token
 from models import Token, TokenData, OperationModel, OperandsModel
-from fastapi import Request
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
-from fastapi.exception_handlers import http_exception_handler
-from fastapi.encoders import jsonable_encoder
+from starlette.status import HTTP_403_FORBIDDEN
+from starlette.responses import RedirectResponse
+
+# making docs and all routes require api key
+API_KEY = "123456789!"
+API_KEY_NAME ="access_token"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
+
+async def get_api_key(api_key_header: str = Security(api_key_header)):
+    print(f'received api key {api_key_header}')
+    if api_key_header == API_KEY:
+        return api_key_header
+    else:
+        print(f"Invalid API key: {api_key_header}") # logs invalid key
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN, detail="Could not validate API Key"
+        )
 
 # Load environment variables
-#load_dotenv()
+load_dotenv()
 
 #SECRET_KEY = os.getenv('SECRET_KEY')
 #ALGORITHM = os.getenv('ALGORITHM')
@@ -30,7 +50,31 @@ SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')  # Using the service role 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # FastAPI instance
+#app = FastAPI(docs_url=None, redoc_url=None)
 app = FastAPI()
+
+def custom_openapi():
+    if app.openapi_schema: 
+        return app.openapi_schema 
+    openapi_schema = get_openapi(
+        title="Your API", 
+        version="1.0.0",
+        description="Recruiter API Documentaiton",
+        routes=app.routes,
+    )
+    openapi_schema["components"]["securitySchemes"] = {
+        "APIKeyHeader": {
+            "type": "apiKey",
+            "name": "access_token",
+            "in": "header"
+        }
+    }
+    openapi_schema["security"] = [{"APIKeyHeader": []}]
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+# apply custom OpenAPI schema
+app.openapi = custom_openapi 
 
 # Add CORS middleware
 origins = [
@@ -50,54 +94,18 @@ app.add_middleware(
 # OAuth2PasswordBearer instance
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-'''
-@app.get("/operate")
-def operate(operation_data: OperationModel):
-    operation = operation_data.operation
-    operand1 = operation_data.operand1
-    operand2 = operation_data.operand2
 
-    try:
-        # Input validation checks
-        if isinstance(operand1, str) or isinstance(operand2, str):
-            # Log invalid operand type error
-            log_operation_to_db(operation, operand1, operand2, None, "Error", error_message="Invalid operand type, expected a number")
-            raise HTTPException(status_code=400, detail="Invalid operand type, expected a number")
-        
-        if math.isnan(operand1) or math.isnan(operand2):
-            # Log NaN error
-            log_operation_to_db(operation, operand1, operand2, None, "Error", error_message="Operands cannot be NaN")
-            raise HTTPException(status_code=400, detail="Operands cannot be NaN")
+@app.get("/docs", dependencies=[Depends(get_api_key)])
+async def get_docs():
+    #return RedirectResponse(url="/docs")
+    return JSONResponse(get_openapi(
+        title="Custom FastAPI Docs",
+        version="1.0.0",
+        description="API documentation for recuriters",
+        routes=app.routes
+    ))
 
-        # Perform operation based on the type
-        if operation == "add":
-            result = operand1 + operand2
-        elif operation == "subtract":
-            result = operand1 - operand2
-        elif operation == "multiply":
-            result = operand1 * operand2
-        elif operation == "divide":
-            if operand2 == 0:
-                # Log division by zero error
-                log_operation_to_db(operation, operand1, operand2, None, "Error", error_message="Division by zero")
-                raise HTTPException(status_code=400, detail="Division by zero")
-            result = operand1 / operand2
-        else:
-            # Log invalid operation error
-            log_operation_to_db(operation, operand1, operand2, None, "Error", error_message="Invalid operation")
-            raise HTTPException(status_code=400, detail="Invalid operation")
-
-        # Log operation to the database on success
-        log_operation_to_db(operation, operand1, operand2, result, "Success", error_message=None)
-        return {"result": result}
-
-    except Exception as e:
-        # Log any other exceptions that occur
-        log_operation_to_db(operation, operand1, operand2, None, "Error", error_message=str(e))
-        raise HTTPException(status_code=400, detail=str(e))
-'''
-
-@app.post("/add")
+@app.post("/add", dependencies=[Depends(get_api_key)])
 def add(operands: OperandsModel):
     try:
         # Input validation checks
@@ -134,7 +142,7 @@ def add(operands: OperandsModel):
         raise HTTPException(status_code=400, detail=str(e))
 
     
-@app.post("/subtract")
+@app.post("/subtract", dependencies=[Depends(get_api_key)])
 def subtract(operands: OperandsModel):
     try:
         # Input validation checks
@@ -171,7 +179,7 @@ def subtract(operands: OperandsModel):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.post("/multiply")
+@app.post("/multiply", dependencies=[Depends(get_api_key)])
 def multiply(operands: OperandsModel):
     try:
         # Input validation checks
@@ -207,7 +215,7 @@ def multiply(operands: OperandsModel):
         log_operation_to_db("multiply", operands.operand1, operands.operand2, None, "Error", error_message=str(e))
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/divide")
+@app.post("/divide", dependencies=[Depends(get_api_key)])
 def divide(operands: OperandsModel):
     try:
         # Input validation checks
