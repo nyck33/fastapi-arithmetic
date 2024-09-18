@@ -22,9 +22,18 @@ from models import Token, TokenData, OperationModel, OperandsModel
 from starlette.status import HTTP_403_FORBIDDEN
 from starlette.responses import RedirectResponse
 
+# Load environment variables
+#load_dotenv()
+
+#SECRET_KEY = os.getenv('SECRET_KEY')
+#ALGORITHM = os.getenv('ALGORITHM')
+#ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')  # Using the service role key for server-side operations
+API_KEY = os.getenv('API_KEY')
+API_KEY_NAME = os.getenv('API_KEY_NAME')
+
 # making docs and all routes require api key
-API_KEY = "Tennis123456789!@#$%^"
-API_KEY_NAME ="access_token"
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 async def get_api_key(api_key_header: str = Security(api_key_header)):
@@ -36,15 +45,6 @@ async def get_api_key(api_key_header: str = Security(api_key_header)):
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN, detail="Could not validate API Key"
         )
-
-# Load environment variables
-load_dotenv()
-
-#SECRET_KEY = os.getenv('SECRET_KEY')
-#ALGORITHM = os.getenv('ALGORITHM')
-#ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
-SUPABASE_URL = os.getenv('SUPABASE_URL')
-SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')  # Using the service role key for server-side operations
 
 # Initialize Supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
