@@ -23,7 +23,7 @@ from starlette.status import HTTP_403_FORBIDDEN
 from starlette.responses import RedirectResponse
 
 # making docs and all routes require api key
-API_KEY = "123456789!"
+API_KEY = "Tennis123456789!@#$%^"
 API_KEY_NAME ="access_token"
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
